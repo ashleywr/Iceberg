@@ -24,13 +24,22 @@ public class HumanoidArmorLayerMixin<T extends LivingEntity, A extends HumanoidM
 	@Unique
 	Field bufferSourceFieldV3 = null;
 
+	// A missing optional API must not be looked up again on every armor render.
+	@Unique
+	private boolean icebergResolvedBufferSourceV2 = false;
+
+	// A missing optional API must not be looked up again on every armor render.
+	@Unique
+	private boolean icebergResolvedBufferSourceV3 = false;
+
 	@Inject(method = "render", require = 0, at = @At("HEAD"))
 	public void icebergStoreBufferSource(PoseStack poseStack, MultiBufferSource bufferSource, int i, T livingEntity, float f, float g, float h, float j, float k, float l, CallbackInfo callback)
 	{
 		try
 		{
-			if (bufferSourceFieldV2 == null)
+			if (!icebergResolvedBufferSourceV2)
 			{
+				icebergResolvedBufferSourceV2 = true;
 				bufferSourceFieldV2 = Class.forName("mod.azure.azurelibarmor.common.api.client.renderer.GeoArmorRenderer").getDeclaredField("bufferSource");
 				bufferSourceFieldV2.setAccessible(true);
 			}
@@ -40,12 +49,13 @@ public class HumanoidArmorLayerMixin<T extends LivingEntity, A extends HumanoidM
 				bufferSourceFieldV2.set(null, bufferSource);
 			}
 		}
-		catch (Exception e) {}
+		catch (Exception e) { bufferSourceFieldV2 = null; }
 
 		try
 		{
-			if (bufferSourceFieldV3 == null)
+			if (!icebergResolvedBufferSourceV3)
 			{
+				icebergResolvedBufferSourceV3 = true;
 				bufferSourceFieldV3 = Class.forName("mod.azure.azurelibarmor.rewrite.render.armor.AzArmorModel").getDeclaredField("bufferSource");
 				bufferSourceFieldV3.setAccessible(true);
 			}
@@ -55,6 +65,6 @@ public class HumanoidArmorLayerMixin<T extends LivingEntity, A extends HumanoidM
 				bufferSourceFieldV3.set(null, bufferSource);
 			}
 		}
-		catch (Exception e) {}
+		catch (Exception e) { bufferSourceFieldV3 = null; }
 	}
 }
